@@ -103,8 +103,10 @@ def serve():
 
 if __name__ == '__main__':
     logging.basicConfig() # Permite o gRPC exibir mensagens
-    print("Starting server in: %s" % ('localhost:50051'))
+    print("\nStarting server in: %s" % ('localhost:50051'))
     try:
         serve()
     except RuntimeError:
-        print(Fore.RED + "Erro: " + Style.RESET_ALL + "A porta 50051 ja esta em uso. Feche o outro processo ou mude a porta.")
+        print(Fore.RED + "Erro: " + Style.RESET_ALL + "A porta 50051 ja esta em uso. Feche o outro processo ou mude a porta.\n")
+    except KeyboardInterrupt: # Ctrl + C
+        print(Fore.BLUE + "\nServidor finalizado.\n" + Style.RESET_ALL)
