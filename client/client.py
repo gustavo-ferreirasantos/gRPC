@@ -3,10 +3,12 @@ from __future__ import print_function
 import grpc
 import tasks_pb2
 import tasks_pb2_grpc
+from colorama import Fore, Style
 
 def teste_tarefas(stub):
     # Criar tarefas
-    print("=== Criando tarefas ===")
+    print(Fore.YELLOW + "=== Criando tarefas ===" + Style.RESET_ALL)
+    # CreateTaskRequest é o dado que o cliente envia, e CreateTask é a função chamada remotamente
     t1 = stub.CreateTask(tasks_pb2.CreateTaskRequest(
         task=tasks_pb2.Task(title="Estudar gRPC", description="Aprender os conceitos basicos")
     ))
@@ -47,7 +49,7 @@ def run():
             stub = tasks_pb2_grpc.TasksStub(channel)
             teste_tarefas(stub)
     except grpc._channel._InactiveRpcError:
-        print("Erro: Servidor nao esta rodando. Inicie o servidor primeiro.")
+        print(Fore.RED + "Erro: "+ Style.RESET_ALL + "Servidor nao esta rodando. Inicie o servidor primeiro.")
 
 
 if __name__ == '__main__':
