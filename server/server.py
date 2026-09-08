@@ -1,46 +1,65 @@
 from concurrent import futures
 import logging
 
+from datetime import datetime
+from google.protobuf import timestamp_pb2
+
 import grpc
 import tasks_pb2
 import tasks_pb2_grpc
 import database
 
+from colorama import Fore, Style
+
+# Transforma a data em formato de texto para google.protobuf.Timestamp
+def to_timestamp(iso_string):
+    dt = datetime.fromisoformat(iso_string)
+    ts = timestamp_pb2.Timestamp()
+    ts.seconds = int(dt.timestamp())
+    ts.nanos = int(dt.microsecond * 1000)
+    return ts
+
 
 class TasksService(tasks_pb2_grpc.TasksServicer):
-
+    # Retorna todas as tarefas
     def GetTasks(self, request, context):
-        tasks = database.get_all_tasks()
+        tasks = database.get_all_tasks() # Lista de dicionários
+        # Retorna um GetTasksResponse, que contém uma lista de task
         return tasks_pb2.GetTasksResponse(
             tasks=[
                 tasks_pb2.Task(
                     id=t["id"],
                     title=t["title"],
                     description=t["description"],
+                    created_at=to_timestamp(t["created_at"]),
                 )
                 for t in tasks
             ]
         )
-
+    # Retorna a tarefa com base no ID
     def GetTaskById(self, request, context):
-        task = database.get_task_by_id(request.id)
+        task = database.get_task_by_id(request.id) # Dicionário ou None
         if not task:
             context.abort(grpc.StatusCode.NOT_FOUND, "Task not found")
+        # Retorna GetTaskByIdResponse
         return tasks_pb2.GetTaskByIdResponse(
             task=tasks_pb2.Task(
                 id=task["id"],
                 title=task["title"],
                 description=task["description"],
+                created_at=to_timestamp(task["created_at"]),
             )
         )
 
     def CreateTask(self, request, context):
-        task = database.create_task(request.task.title, request.task.description)
+        task = database.create_task(request.task.title, request.task.description) # Dicionário
+        # Retorna CreateTaskResponse
         return tasks_pb2.CreateTaskResponse(
             task=tasks_pb2.Task(
                 id=task["id"],
                 title=task["title"],
                 description=task["description"],
+                created_at=to_timestamp(task["created_at"]),
             )
         )
 
@@ -53,6 +72,7 @@ class TasksService(tasks_pb2_grpc.TasksServicer):
                 id=task["id"],
                 title=task["title"],
                 description=task["description"],
+                created_at=to_timestamp(task["created_at"]),
             )
         )
 
@@ -65,6 +85,7 @@ class TasksService(tasks_pb2_grpc.TasksServicer):
                 id=task["id"],
                 title=task["title"],
                 description=task["description"],
+                created_at=to_timestamp(task["created_at"]),
             )
         )
 
@@ -81,6 +102,9 @@ def serve():
 
 
 if __name__ == '__main__':
-    logging.basicConfig()
+    logging.basicConfig() # Permite o gRPC exibir mensagens
     print("Starting server in: %s" % ('localhost:50051'))
-    serve()
+    try:
+        serve()
+    except RuntimeError:
+        print(Fore.RED + "Erro: " + Style.RESET_ALL + "A porta 50051 ja esta em uso. Feche o outro processo ou mude a porta.")
