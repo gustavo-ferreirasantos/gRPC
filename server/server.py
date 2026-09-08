@@ -91,6 +91,7 @@ class TasksService(tasks_pb2_grpc.TasksServicer):
 
 
 def serve():
+    database.init_db()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     tasks_pb2_grpc.add_TasksServicer_to_server(TasksService(), server)
