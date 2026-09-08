@@ -4,31 +4,44 @@ import grpc
 import tasks_pb2
 import tasks_pb2_grpc
 from colorama import Fore, Style
+from tabulate import tabulate
+from datetime import datetime
+
+def imprimir_tabela(lista_tarefas):
+  # print(type(lista_tarefas))
+  cabecalho = ['id','título','descrição','hora']
+  dados = []
+  for task in lista_tarefas:
+    dt = datetime.fromtimestamp(task.created_at.seconds)
+    hora = f"{dt.hour}:{dt.minute}:{dt.second}:{task.created_at.nanos // 1_000_000:03d}"
+    dados.append([task.id, task.title, task.description, hora])
+    # print(f"id={task.id}, title={task.title}, desc={task.description}, created_at={task.created_at}")
+  print(tabulate(dados, headers=cabecalho, tablefmt="grid"))
 
 def criar_tarefa(stub, titulo: str, descricao: str) -> tasks_pb2.CreateTaskResponse:
   # CreateTaskRequest é o dado que o cliente envia, e CreateTask é a função chamada remotamente
   tarefa = stub.CreateTask(tasks_pb2.CreateTaskRequest(
       task=tasks_pb2.Task(title=titulo, description=descricao)
   ))
-  print(f"Criada: id={tarefa.task.id}, title={tarefa.task.title}, created_at={tarefa.task.created_at}")
+  # print(f"Criada: id={tarefa.task.id}, title={tarefa.task.title}, created_at={tarefa.task.created_at}")
+  imprimir_tabela([tarefa.task])
   return tarefa
 
 def listar_tarefas(stub):
   print(Fore.YELLOW + "\n=== Listando tarefas ===" + Style.RESET_ALL)
   response = stub.GetTasks(tasks_pb2.GetTasksRequest())
-  for task in response.tasks:
-    print(f"id={task.id}, title={task.title}, desc={task.description}, created_at={task.created_at}")
+  imprimir_tabela(response.tasks)
 
 def atualizar_tarefa(stub, id: int, titulo: str, descricao: str) -> tasks_pb2.UpdateTaskResponse:
   updated = stub.UpdateTask(tasks_pb2.UpdateTaskRequest(
     task=tasks_pb2.Task(id=id, title=titulo, description=descricao)
   ))
-  print(f"Atualizada: id={updated.task.id}, title={updated.task.title}, desc={updated.task.description}, created_at={updated.task.created_at}")
+  imprimir_tabela([updated.task])
   return updated
 
 def deletar_tarefa(stub, id: int) -> tasks_pb2.DeleteTaskResponse:
   deleted = stub.DeleteTask(tasks_pb2.DeleteTaskRequest(id=id))
-  print(f"Deletada: id={deleted.task.id}, title={deleted.task.title}, created_at={deleted.task.created_at}")
+  imprimir_tabela([deleted.task])
   return deleted
 
 
