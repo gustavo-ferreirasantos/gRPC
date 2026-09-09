@@ -17,11 +17,14 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             description TEXT NOT NULL,
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            data_limit TEXT,
+            status INTEGER NOT NULL DEFAULT 0
         )
     """)
     conn.commit()
     conn.close()
+
 
 # Converte uma linha da tabela num dicionário python
 def row_to_dict(row):
@@ -30,6 +33,8 @@ def row_to_dict(row):
         "title": row["title"],
         "description": row["description"],
         "created_at": row["created_at"],
+        "data_limit": row["data_limit"],
+        "status": row["status"],
     }
 
 
@@ -37,39 +42,39 @@ def get_all_tasks():
     conn = get_connection()
     rows = conn.execute("SELECT * FROM tasks").fetchall()
     conn.close()
-    return [row_to_dict(r) for r in rows] # Retorna uma lista de dicionários
+    return [row_to_dict(r) for r in rows]
 
 
 def get_task_by_id(task_id):
     conn = get_connection()
     row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
     conn.close()
-    return row_to_dict(row) if row else None # Retorna a linha como dicionário
+    return row_to_dict(row) if row else None
 
 
-def create_task(title, description):
+def create_task(title, description, data_limit=None, status=0):
     conn = get_connection()
     created_at = datetime.now().isoformat()
     cursor = conn.execute(
-        "INSERT INTO tasks (title, description, created_at) VALUES (?, ?, ?)",
-        (title, description, created_at),
+        "INSERT INTO tasks (title, description, created_at, data_limit, status) VALUES (?, ?, ?, ?, ?)",
+        (title, description, created_at, data_limit, status),
     )
     conn.commit()
     task_id = cursor.lastrowid
     conn.close()
-    return {"id": task_id, "title": title, "description": description, "created_at": created_at}
+    return {"id": task_id, "title": title, "description": description, "created_at": created_at, "data_limit": data_limit, "status": status}
 
 
-def update_task(task_id, title, description):
+def update_task(task_id, title, description, data_limit=None, status=0):
     conn = get_connection()
     conn.execute(
-        "UPDATE tasks SET title = ?, description = ? WHERE id = ?",
-        (title, description, task_id),
+        "UPDATE tasks SET title = ?, description = ?, data_limit = ?, status = ? WHERE id = ?",
+        (title, description, data_limit, status, task_id),
     )
     conn.commit()
     row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
     conn.close()
-    return row_to_dict(row) if row else None # Retorna a task após a modificação
+    return row_to_dict(row) if row else None
 
 
 def delete_task(task_id):
@@ -79,4 +84,4 @@ def delete_task(task_id):
         conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
         conn.commit()
     conn.close()
-    return row_to_dict(row) if row else None # Retorna a a tarefa deletada
+    return row_to_dict(row) if row else None
