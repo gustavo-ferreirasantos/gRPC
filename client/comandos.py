@@ -28,6 +28,17 @@ def ler_data():
     except (ValueError, OverflowError):
       print(Fore.RED + "Data inválida, tente novamente.\n" + Style.RESET_ALL)
 
+def ler_status(status_atual):
+  try:
+    aux = int(input("Novo Status: "))
+  except (ValueError, OverflowError):
+    print("Status inválido, colocando para ERROR")
+    return 20
+  if aux not in (0, 10, 20):
+    print("Status Inválido, mantendo Status atual")
+    return status_atual
+  return aux
+
 def formatar_hora(task):
     dt = datetime.fromtimestamp(task.created_at.seconds)
     return f"{dt.hour:02d}:{dt.minute:02d}:{dt.second:02d}.{task.created_at.nanos // 1_000_000:03d}"
@@ -161,23 +172,13 @@ def update_tarefa_wrapper(stub):
     case "d":
       descricao = input("Nova Descrição: ")
     case "s":
-      aux = int(input("Novo Status: "))
-      if aux not in (0, 10, 20):
-        print("Status Inválido, mantendo Status atual")
-      else:
-        status = aux
+      status = ler_status(status)
     case "ts":
       data = ler_data()
     case "a":
       titulo = input("Novo Título: ")
       descricao = input("Nova Descrição: ")
-
-      aux = int(input("Novo Status: "))
-      if aux not in (0, 10, 20):
-        print("Status Inválido, mantendo Status atual")
-      else:
-        status = aux
-
+      status = ler_status(status)
       data = ler_data()
     case _:
       print("Opção inválida")
