@@ -1,38 +1,25 @@
 version: '3.8'
 services:
     server:
-        build: .server
-        ports:
-            - "8080:8080"
-        volumes:
-            - .server:/app
-        restart: always
-        depends_on:
-            - db
-    client:
-        build: .client
-        ports:
-            - "8081:8080"
-        volumes:
-            - .client:/app
-        restart: always
-        depends_on:
-            - server
-            - db
-    client2:
-        build: .client
-        ports:
-            - "8082:8080"
-        volumes:
-            - .client:/app
-        restart: always
-        depends_on:
-            - server
-            - db
-    
-    db:
-        image: mysql:5.7
+        build: ./server
         environment:
-            - Password=root
+            - TZ=America/Bahia
         ports:
-            - "3306:3306"
+            - "50051:50051"
+        volumes:
+            - ./server:/app
+        restart: always
+    client:
+        build: ./client
+        volumes:
+            - ./client:/app
+        restart: always
+        depends_on:
+            - server
+    client2:
+        build: ./client
+        volumes:
+            - ./client:/app
+        restart: always
+        depends_on:
+            - server

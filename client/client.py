@@ -8,7 +8,7 @@ from colorama import Fore, Style
 
 def run():
     try:
-        with grpc.insecure_channel('localhost:50051') as channel:
+        with grpc.insecure_channel('server:50051') as channel:
             stub = tasks_pb2_grpc.TasksStub(channel)
             cmds.teste_tarefas(stub)
     except grpc._channel._InactiveRpcError:

@@ -11,11 +11,19 @@ service Tasks{
     rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {}
 }
 
+enum Status {
+    PENDING = 0;
+    COMPLETED = 10;
+    ERROR = 20;
+}
+
 message Task {
     int32 id = 1;
     string title = 2;
     string description = 3;
     google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp data_limit = 5; 
+    Status status = 6;             
 }
 
 // GetTasks
