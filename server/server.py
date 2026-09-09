@@ -14,7 +14,10 @@ from colorama import Fore, Style
 def to_timestamp(iso_string):
     if not iso_string:
         return None
-    dt = datetime.fromisoformat(iso_string)
+    try:
+        dt = datetime.fromisoformat(iso_string)
+    except (ValueError, TypeError):
+        return None
     ts = timestamp_pb2.Timestamp()
     ts.seconds = int(dt.timestamp())
     ts.nanos = int(dt.microsecond * 1000)

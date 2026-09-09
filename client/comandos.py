@@ -9,10 +9,24 @@ from datetime import datetime, timezone
 from google.protobuf import timestamp_pb2
 
 STATUS_MAP = {
-    0: "PENDING",
-    10: "COMPLETED",
-    20: "ERROR",
+  0: "PENDING",
+  10: "COMPLETED",
+  20: "ERROR",
 }
+
+def ler_data():
+  while True:
+    try:
+      ano = int(input("Ano: "))
+      mes = int(input("Mês: "))
+      dia = int(input("Dia: "))
+      hora = int(input("Hora: "))
+      minuto = int(input("Minuto: "))
+      data = timestamp_pb2.Timestamp()
+      data.FromSeconds(int(datetime(ano, mes, dia, hora, minuto, tzinfo=timezone.utc).timestamp()))
+      return data
+    except (ValueError, OverflowError):
+      print(Fore.RED + "Data inválida, tente novamente.\n" + Style.RESET_ALL)
 
 def formatar_hora(task):
     dt = datetime.fromtimestamp(task.created_at.seconds)
@@ -91,32 +105,95 @@ def teste_tarefas(stub):
   listar_tarefas(stub)
 
 # Wrappers
+
+# Lida com o erro de tarefa não encontrada, usando função genérica e classe como parâmetro
+# Usar o dicionário para os argumentos e fazer unpacking dele aumenta a flexibilidade
+def not_found_handler(funcao, classe_interna, argumentos: dict):
+  try:
+    task = funcao(classe_interna(**argumentos)).task
+  except grpc.RpcError as e:
+    if e.code() == grpc.StatusCode.NOT_FOUND:
+      print(Fore.RED + "Erro: " + Style.RESET_ALL + "Tarefa não encontrada")
+      return None
+    else:
+      print("Erro desconhecido")
+      exit(1)
+  return task
+
 def criar_tarefa_wrapper(stub):
   titulo = input("Título: ")
   descricao = input("Descrição: ")
   data = None
   tem_data = True if input("Deseja definir data limite? [s/n]: ") == 's' else False
   if tem_data:
-    ano = int(input("Ano: "))
-    mes = int(input("Mês: "))
-    dia = int(input("Dia: "))
-    hora = int(input("Hora: "))
-    minuto = int(input("Minuto: "))
-    data = timestamp_pb2.Timestamp()
-    data.FromSeconds(int(datetime(ano, mes, dia, hora, minuto, tzinfo=timezone.utc).timestamp()))
-  return criar_tarefa(stub, titulo, descricao, data)
+    data = ler_data()
+  return criar_tarefa(stub, titulo, descricao, data).task
 
 def get_tarefa_wrapper(stub):
   id = int(input("ID: "))
-  task = stub.GetTaskById(tasks_pb2.GetTaskByIdRequest(id=id)).task
+  task = not_found_handler(stub.GetTaskById, tasks_pb2.GetTaskByIdRequest, {'id': id})
+  if task is not None:
+    imprimir_tabela([task])
+    return task
+  return None
+
+def update_tarefa_wrapper(stub):
+  id = int(input("ID: "))
+  task = not_found_handler(stub.GetTaskById, tasks_pb2.GetTaskByIdRequest, {'id': id})
+  if task is None:
+    return None
   imprimir_tabela([task])
-  return task
+  titulo = task.title
+  descricao = task.description
+  status = task.status
+  data = task.data_limit if task.HasField("data_limit") else None
+  print("Selecione o que você deseja mudar\n")
+  print("t - Título")
+  print("d - Descrição")
+  print("s - Status")
+  print("ts - Data limite")
+  print("a - tudo\n")
+  selecionado = input()
+
+  match selecionado:
+    case "t":
+      titulo = input("Novo Título: ")
+    case "d":
+      descricao = input("Nova Descrição: ")
+    case "s":
+      aux = int(input("Novo Status: "))
+      if aux not in (0, 10, 20):
+        print("Status Inválido, mantendo Status atual")
+      else:
+        status = aux
+    case "ts":
+      data = ler_data()
+    case "a":
+      titulo = input("Novo Título: ")
+      descricao = input("Nova Descrição: ")
+
+      aux = int(input("Novo Status: "))
+      if aux not in (0, 10, 20):
+        print("Status Inválido, mantendo Status atual")
+      else:
+        status = aux
+
+      data = ler_data()
+    case _:
+      print("Opção inválida")
+      return None
+  return atualizar_tarefa(stub, id = id, titulo= titulo, descricao=descricao, data_limit=data, status=status).task
+
+
+
 
 def deletar_tarefa_wrapper(stub):
   id = int(input("ID: "))
-  task = stub.DeleteTask(tasks_pb2.DeleteTaskRequest(id=id)).task
-  print("Tarefa deletada")
-  return task
+  task = not_found_handler(stub.DeleteTask, tasks_pb2.DeleteTaskRequest, {'id': id})
+  if task is not None:
+    print("Tarefa deletada")
+    return task
+  return None
 
 def deletar_tudo_wrapper(stub):
   deletar = True if input("Tem certeza? [s/n]: ") == 's' else False

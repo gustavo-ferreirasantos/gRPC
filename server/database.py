@@ -65,10 +65,10 @@ def create_task(title, description, data_limit=None, status=0):
     return {"id": task_id, "title": title, "description": description, "created_at": created_at, "data_limit": data_limit, "status": status}
 
 
-def update_task(task_id, title, description, data_limit=None, status=0):
+def update_task(task_id, title, description, data_limit=None, status=None):
     conn = get_connection()
-    conn.execute(
-        "UPDATE tasks SET title = ?, description = ?, data_limit = ?, status = ? WHERE id = ?",
+    conn.execute( # COALESCE retorna o primeiro valor não-NULL de uma lista
+        "UPDATE tasks SET title = ?, description = ?, data_limit = COALESCE(?, data_limit), status = COALESCE(?, status) WHERE id = ?",
         (title, description, data_limit, status, task_id),
     )
     conn.commit()
