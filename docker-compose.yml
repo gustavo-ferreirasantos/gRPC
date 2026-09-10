@@ -1,4 +1,3 @@
-version: '3.8'
 services:
     server:
         build: ./server
@@ -17,6 +16,9 @@ services:
         tty: true
         depends_on:
             - server
+        environment:
+            - GRPC_ADDRESS=server:50051
+            - TZ=America/Bahia
     client2:
         build: ./client
         volumes:
@@ -25,3 +27,6 @@ services:
         tty: true
         depends_on:
             - server
+        environment:
+            - GRPC_ADDRESS=server:50051
+            - TZ=America/Bahia

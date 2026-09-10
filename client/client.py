@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import os
 import grpc
 import tasks_pb2
 import tasks_pb2_grpc
@@ -8,8 +9,9 @@ from colorama import Fore, Style
 
 def run():
     selecionada = 0
-    try: # 'server:50051'
-        with grpc.insecure_channel('server:50051') as channel:
+    try:
+        address = os.environ.get('GRPC_ADDRESS', 'localhost:50051')
+        with grpc.insecure_channel(address) as channel:
             stub = tasks_pb2_grpc.TasksStub(channel)
             while(True):
                 print("\nSelecione uma opção\n")
@@ -20,7 +22,7 @@ def run():
                 print("5 - Deletar tarefa")
                 print("6 - Deletar todas as tarefas")
                 print("7 - Teste rápido")
-                print("default - Sair\n")
+                print("0 - Sair\n")
 
                 selecionada = int(input())
                 match selecionada:
