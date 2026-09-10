@@ -13,13 +13,15 @@ services:
         build: ./client
         volumes:
             - ./client:/app
-        restart: always
+        stdin_open: true
+        tty: true
         depends_on:
             - server
     client2:
         build: ./client
         volumes:
             - ./client:/app
-        restart: always
+        stdin_open: true
+        tty: true
         depends_on:
             - server

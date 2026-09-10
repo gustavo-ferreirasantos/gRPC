@@ -7,6 +7,8 @@ from colorama import Fore, Style
 from tabulate import tabulate
 from datetime import datetime, timezone
 from google.protobuf import timestamp_pb2
+from zoneinfo import ZoneInfo
+LOCAL_TZ = ZoneInfo("America/Bahia") 
 
 STATUS_MAP = {
   0: "PENDING",
@@ -22,8 +24,9 @@ def ler_data():
       dia = int(input("Dia: "))
       hora = int(input("Hora: "))
       minuto = int(input("Minuto: "))
+      dt_local = datetime(ano, mes, dia, hora, minuto, tzinfo=LOCAL_TZ)
       data = timestamp_pb2.Timestamp()
-      data.FromSeconds(int(datetime(ano, mes, dia, hora, minuto, tzinfo=timezone.utc).timestamp()))
+      data.FromDatetime(dt_local)
       return data
     except (ValueError, OverflowError):
       print(Fore.RED + "Data inválida, tente novamente.\n" + Style.RESET_ALL)
@@ -40,13 +43,13 @@ def ler_status(status_atual):
   return aux
 
 def formatar_hora(task):
-    dt = datetime.fromtimestamp(task.created_at.seconds)
+    dt = datetime.fromtimestamp(task.created_at.seconds, tz=LOCAL_TZ)
     return f"{dt.hour:02d}:{dt.minute:02d}:{dt.second:02d}.{task.created_at.nanos // 1_000_000:03d}"
 
 def formatar_data_limit(task):
     if not task.HasField("data_limit"):
         return "-"
-    dt = datetime.fromtimestamp(task.data_limit.seconds)
+    dt = datetime.fromtimestamp(task.data_limit.seconds, tz=LOCAL_TZ)
     return f"{dt.day:02d}/{dt.month:02d}/{dt.year} {dt.hour:02d}:{dt.minute:02d}"
 
 def imprimir_tabela(lista_tarefas):

@@ -9,7 +9,7 @@ from colorama import Fore, Style
 def run():
     selecionada = 0
     try: # 'server:50051'
-        with grpc.insecure_channel('localhost:50051') as channel:
+        with grpc.insecure_channel('server:50051') as channel:
             stub = tasks_pb2_grpc.TasksStub(channel)
             while(True):
                 print("\nSelecione uma opção\n")
@@ -43,10 +43,10 @@ def run():
                         exit(0)
             
 
-    except grpc._channel._InactiveRpcError:
-        print(Fore.RED + "Erro: " + Style.RESET_ALL + "Servidor não está rodando. Inicie o servidor primeiro.")
     except grpc.RpcError as e:
-        if e.code() == grpc.StatusCode.NOT_FOUND:
+        if e.code() == grpc.StatusCode.UNAVAILABLE:
+            print(Fore.RED + "Erro: " + Style.RESET_ALL + "Servidor não está rodando. Inicie o servidor primeiro.")
+        elif e.code() == grpc.StatusCode.NOT_FOUND:
             print(Fore.RED + "Erro: " + Style.RESET_ALL + e.details())
         else:
             print(Fore.RED + "Erro gRPC: " + Style.RESET_ALL + f"{e.code().name} - {e.details()}")

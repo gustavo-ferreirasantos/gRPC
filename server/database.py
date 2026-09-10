@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 
 DB_PATH = "tasks.db"
 
@@ -54,7 +54,7 @@ def get_task_by_id(task_id):
 
 def create_task(title, description, data_limit=None, status=0):
     conn = get_connection()
-    created_at = datetime.now().isoformat()
+    created_at = datetime.now(timezone.utc).isoformat()
     cursor = conn.execute(
         "INSERT INTO tasks (title, description, created_at, data_limit, status) VALUES (?, ?, ?, ?, ?)",
         (title, description, created_at, data_limit, status),

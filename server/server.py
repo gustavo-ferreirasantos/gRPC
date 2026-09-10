@@ -1,7 +1,7 @@
 from concurrent import futures
 import logging
 
-from datetime import datetime
+from datetime import datetime, timezone
 from google.protobuf import timestamp_pb2
 
 import grpc
@@ -18,9 +18,10 @@ def to_timestamp(iso_string):
         dt = datetime.fromisoformat(iso_string)
     except (ValueError, TypeError):
         return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc) 
     ts = timestamp_pb2.Timestamp()
-    ts.seconds = int(dt.timestamp())
-    ts.nanos = int(dt.microsecond * 1000)
+    ts.FromDatetime(dt)
     return ts
 
 
