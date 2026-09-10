@@ -9,6 +9,7 @@ Sistema cliente-servidor usando gRPC com SQLite para gerenciamento de tarefas.
 
 
 ## Compilação do Protocol Buffers
+Execute os comandos no diretório raiz do repositório
 
 **Servidor**
 ```bash
