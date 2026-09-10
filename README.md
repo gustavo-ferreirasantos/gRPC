@@ -7,6 +7,13 @@ Sistema cliente-servidor usando gRPC com SQLite para gerenciamento de tarefas.
 - Python 3.11+
 - Docker Desktop (para rodar via Docker)
 
+
+## Compilação do Protocol Buffers
+
+```bash
+python -m grpc_tools.protoc -I./protos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/tasks.proto
+```
+
 ## Rodando localmente
 
 ### Servidor
