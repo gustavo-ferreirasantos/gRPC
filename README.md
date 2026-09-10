@@ -49,7 +49,9 @@ docker-compose down
 
 # Construir e iniciar todos os containers
 docker-compose up --build -d
+```
 
+```bash
 # Conectar ao client
 docker-compose exec client python client.py
 ```
