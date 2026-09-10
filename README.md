@@ -10,8 +10,14 @@ Sistema cliente-servidor usando gRPC com SQLite para gerenciamento de tarefas.
 
 ## Compilação do Protocol Buffers
 
+**Servidor**
 ```bash
-python -m grpc_tools.protoc -I./protos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/tasks.proto
+python -m grpc_tools.protoc -I./protos --python_out=./server --pyi_out=./server --grpc_python_out=./server ./protos/tasks.proto
+```
+
+**Cliente**
+```bash
+python -m grpc_tools.protoc -I./protos --python_out=./client --pyi_out=./client --grpc_python_out=./client ./protos/tasks.proto
 ```
 
 ## Rodando localmente
@@ -72,3 +78,9 @@ docker-compose down
 ```bash
 docker-compose logs -f
 ```
+
+### Autores
+
+- Gustavo Ferreira Santos
+- Lorenzo de Souza Oliveira
+- Luiz Antonio Lacerda Amorim
