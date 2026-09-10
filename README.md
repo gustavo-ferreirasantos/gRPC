@@ -47,6 +47,13 @@ docker-compose exec client python client.py
 docker-compose exec client2 python client.py
 ```
 
+### Visualizar ips dos containers
+
+```bash
+docker network inspect grpc_default
+```
+
+
 ### Parar tudo
 
 ```bash
